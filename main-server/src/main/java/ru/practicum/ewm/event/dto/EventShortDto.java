@@ -19,5 +19,6 @@ public class EventShortDto {
     private LocalDateTime eventDate; // Дата и время на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
     private UserShortDto initiator; // Инициатор события
     private Boolean paid; // Нужно ли оплачивать участие
+    private Long confirmedRequests; // Количество одобренных заявок на участие в данном событии
     private Long views; // Количество просмотрев события
 }

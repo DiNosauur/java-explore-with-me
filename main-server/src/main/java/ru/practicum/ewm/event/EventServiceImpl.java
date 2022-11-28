@@ -10,6 +10,7 @@ import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.user.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,7 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public EventFullDto saveEvent(NewEventDto eventDto, Long initiatorId, Long userId) {
+    public EventFullDto saveEvent(NewEventDto eventDto, Long initiatorId) {
         log.info("Добавление события {} от пользователя (id={})", eventDto.toString(), initiatorId);
         Optional<Location> location = locationRepository.findByLatAndLon(
                 eventDto.getLocation().getLat(),
@@ -50,7 +51,7 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public Optional<EventFullDto> updateEvent(UpdateEventRequestDto eventDto, Long initiatorId, Long userId) {
+    public Optional<EventFullDto> updateEvent(UpdateEventRequestDto eventDto, Long initiatorId) {
         log.info("Изменение события {} от пользователя (id={})", eventDto.toString(), initiatorId);
         Optional<Event> eventOld = repository.findById(eventDto.getEventId());
         if (eventOld.isPresent()) {
@@ -63,7 +64,7 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public Optional<EventFullDto> adminUpdateEvent(AdminUpdateEventRequestDto eventDto, Long eventId, Long userId) {
+    public Optional<EventFullDto> adminUpdateEvent(AdminUpdateEventRequestDto eventDto, Long eventId) {
         log.info("Изменение события {} администратором", eventDto.toString());
         Optional<Event> eventOld = repository.findById(eventId);
         if (eventOld.isPresent()) {
@@ -76,7 +77,7 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public Optional<EventFullDto> adminPublishEvent(Long eventId, Long userId) {
+    public Optional<EventFullDto> adminPublishEvent(Long eventId) {
         log.info("Публикация события (id={}) администратором", eventId);
         Optional<Event> eventOld = repository.findById(eventId);
         if (eventOld.isPresent()) {
@@ -91,7 +92,7 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public Optional<EventFullDto> adminRejectEvent(Long eventId, Long userId) {
+    public Optional<EventFullDto> adminRejectEvent(Long eventId) {
         log.info("Отклонение события (id={}) администратором", eventId);
         Optional<Event> eventOld = repository.findById(eventId);
         if (eventOld.isPresent()) {
@@ -105,7 +106,7 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public Optional<EventFullDto> annulateEvent(Long initiatorId, Long eventId, Long userId) {
+    public Optional<EventFullDto> annulateEvent(Long initiatorId, Long eventId) {
         log.info("Аннулирование события (id={}) от пользователя (id={})", eventId, initiatorId);
         Optional<Event> eventOld = repository.findById(eventId);
         if (eventOld.isPresent()) {
@@ -118,8 +119,8 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Collection<EventShortDto> findUserEvents(long userId, long initiatorId, int from, int size) {
-        log.info("Получение информации о событиях пользователя (id={}) им самим", userId);
+    public Collection<EventShortDto> findUserEvents(long initiatorId, int from, int size) {
+        log.info("Получение информации о событиях пользователя (id={})", initiatorId);
         int page = from / size;
         return repository.findAllByInitiatorId(initiatorId,
                 PageRequest.of(page, size))
@@ -132,19 +133,25 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Collection<EventShortDto> findEvents(long userId,
-                                                String text,
+    public Collection<EventShortDto> findEvents(String text,
                                                 List<Long> categories,
                                                 Boolean paid,
-                                                LocalDateTime rangeStart,
-                                                LocalDateTime rangeEnd,
+                                                String rangeStart,
+                                                String rangeEnd,
                                                 Boolean onlyAvailable,
                                                 String sort,
                                                 int from,
                                                 int size) {
-        log.info("Получение информации о событиях (text={}) пользователем (id={})", text, userId);
+         log.info("Получение информации о событиях " +
+                        "(text={},categories={},paid={},rangeStart={},rangeEnd={},onlyAvailable={},sort={})"
+                , text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
         int page = from / size;
-        return repository.findEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
+        return repository.findEvents(text, categories, paid,
+                rangeStart == null ? null : LocalDateTime.parse(rangeStart,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                rangeEnd == null ? null : LocalDateTime.parse(rangeEnd,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                onlyAvailable,
                 PageRequest.of(page, size))
                 .stream()
                 .map(event -> EventMapper.toEventShortDto(event,
@@ -155,18 +162,24 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Collection<EventFullDto> adminFindEvents(long userId,
-                                                    List<Long> users,
+    public Collection<EventFullDto> adminFindEvents(List<Long> users,
                                                     List<String> states,
                                                     List<Long> categories,
-                                                    LocalDateTime rangeStart,
-                                                    LocalDateTime rangeEnd,
+                                                    String rangeStart,
+                                                    String rangeEnd,
                                                     int from,
                                                     int size) {
         log.info("Получение информации о событиях (users={},states={},categories={},rangeStart={},rangeEnd={})"
                 , users, states, categories, rangeStart, rangeEnd);
         int page = from / size;
-        return repository.adminFindEvents(users, states, categories, rangeStart, rangeEnd,
+        return repository.adminFindEvents(
+                users,
+                states,
+                categories,
+                rangeStart == null ? null : LocalDateTime.parse(rangeStart,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                rangeEnd == null ? null : LocalDateTime.parse(rangeEnd,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 PageRequest.of(page, size))
                 .stream()
                 .map(event -> toEventFullDto(event))
@@ -174,7 +187,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Optional<EventFullDto> getUserEvent(long userId, long initiatorId, long eventId) {
+    public Optional<EventFullDto> getUserEvent(long initiatorId, long eventId) {
         log.info("Получение информации о событии (id={}) пользователя (id={}) им самим", eventId, initiatorId);
         Optional<Event> event = repository.findById(eventId);
         if (event.isPresent()) {
@@ -185,8 +198,8 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Optional<EventFullDto> getEvent(long id, long userId) {
-        log.info("Получение информации о событии (id={}) пользователем (id={})", id, userId);
+    public Optional<EventFullDto> getEvent(long id) {
+        log.info("Получение информации о событии (id={})", id);
         Optional<Event> event = repository.findById(id);
         if (event.isPresent()) {
             return Optional.of(toEventFullDto(event.get()));

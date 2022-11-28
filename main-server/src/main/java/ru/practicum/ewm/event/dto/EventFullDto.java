@@ -29,5 +29,6 @@ public class EventFullDto {
     private LocalDateTime publishedOn; // Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss")
     private Boolean requestModeration; // Нужна ли пре-модерация заявок на участие
     private EventState state; // статус события
+    private Long confirmedRequests; // Количество одобренных заявок на участие в данном событии
     private Long views; // Количество просмотрев события
 }

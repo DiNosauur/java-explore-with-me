@@ -30,6 +30,7 @@ public class EventMapper {
                 event.getPublishedOn(),
                 event.getRequestModeration(),
                 event.getState(),
+                event.getConfirmedRequests(),
                 views
         );
     }
@@ -46,6 +47,7 @@ public class EventMapper {
                 event.getEventDate(),
                 UserMapper.toUserShortDto(initiator),
                 event.getPaid(),
+                event.getConfirmedRequests(),
                 views
         );
     }
@@ -76,22 +78,18 @@ public class EventMapper {
         event.setPaid(eventDto.getPaid());
         event.setParticipantLimit(eventDto.getParticipantLimit());
         event.setRequestModeration(eventDto.getRequestModeration());
-        if (eventDto.getRequestModeration()) {
-            event.setState(EventState.PENDING);
-        } else {
-            event.setState(EventState.PUBLISHED);
-            event.setPublishedOn(LocalDateTime.now());
-        }
+        event.setState(EventState.PENDING);
         return event;
     }
 
     public static Event toEvent(UpdateEventRequestDto eventDto, Event eventOld) {
-        Event event = new Event();
+        Event event = eventOld;
         event.setTitle(eventDto.getTitle() == null ? eventOld.getTitle() : eventDto.getTitle());
         event.setAnnotation(eventDto.getAnnotation() == null ? eventOld.getAnnotation() : eventDto.getAnnotation());
         event.setDescription(eventDto.getDescription() == null ? eventOld.getDescription() : eventDto.getDescription());
         event.setCategoryId(eventDto.getCategory() == null ? eventOld.getCategoryId() : eventDto.getCategory());
-        event.setEventDate(eventDto.getEventDate() == null ? eventOld.getEventDate() : eventDto.getEventDate());
+        event.setEventDate(eventDto.getEventDate() == null ? eventOld.getEventDate() :
+                LocalDateTime.parse(eventDto.getEventDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         event.setPaid(eventDto.getPaid() == null ? eventOld.getPaid() : eventDto.getPaid());
         event.setParticipantLimit(eventDto.getParticipantLimit() == null
                 ? eventOld.getParticipantLimit() : eventDto.getParticipantLimit());
@@ -101,12 +99,13 @@ public class EventMapper {
     }
 
     public static Event toEvent(AdminUpdateEventRequestDto eventDto, Event eventOld) {
-        Event event = new Event();
+        Event event = eventOld;
         event.setTitle(eventDto.getTitle() == null ? eventOld.getTitle() : eventDto.getTitle());
         event.setAnnotation(eventDto.getAnnotation() == null ? eventOld.getAnnotation() : eventDto.getAnnotation());
         event.setDescription(eventDto.getDescription() == null ? eventOld.getDescription() : eventDto.getDescription());
         event.setCategoryId(eventDto.getCategory() == null ? eventOld.getCategoryId() : eventDto.getCategory());
-        event.setEventDate(eventDto.getEventDate() == null ? eventOld.getEventDate() : eventDto.getEventDate());
+        event.setEventDate(eventDto.getEventDate() == null ? eventOld.getEventDate() :
+                LocalDateTime.parse(eventDto.getEventDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         event.setPaid(eventDto.getPaid() == null ? eventOld.getPaid() : eventDto.getPaid());
         event.setParticipantLimit(eventDto.getParticipantLimit() == null
                 ? eventOld.getParticipantLimit() : eventDto.getParticipantLimit());

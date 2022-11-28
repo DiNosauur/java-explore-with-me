@@ -1,13 +1,11 @@
 package ru.practicum.ewm.event;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.*;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,105 +16,93 @@ public class EventController {
     private final EventService service;
 
     @PutMapping("/admin/events/{eventId}")
-    public ResponseEntity<EventFullDto> adminUpdateEvent(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                         @PathVariable long eventId,
+    public ResponseEntity<EventFullDto> adminUpdateEvent(@PathVariable long eventId,
                                                          @RequestBody AdminUpdateEventRequestDto eventDto) {
-        return service.adminUpdateEvent(eventDto, eventId, userId)
+        return service.adminUpdateEvent(eventDto, eventId)
                 .map(updatedEvent -> new ResponseEntity<>(updatedEvent, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PatchMapping("/admin/events/{eventId}/publish")
-    public ResponseEntity<EventFullDto> adminPublishEvent(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                          @PathVariable long eventId) {
-        return service.adminPublishEvent(eventId, userId)
+    public ResponseEntity<EventFullDto> adminPublishEvent(@PathVariable long eventId) {
+        return service.adminPublishEvent(eventId)
                 .map(updatedEvent -> new ResponseEntity<>(updatedEvent, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PatchMapping("/admin/events/{eventId}/reject")
-    public ResponseEntity<EventFullDto> adminRejectEvent(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                         @PathVariable long eventId) {
-        return service.adminRejectEvent(eventId, userId)
+    public ResponseEntity<EventFullDto> adminRejectEvent(@PathVariable long eventId) {
+        return service.adminRejectEvent(eventId)
                 .map(updatedEvent -> new ResponseEntity<>(updatedEvent, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/admin/events")
-    public Collection<EventFullDto> adminFindEvents(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                    @RequestParam(required = false) List<Long> users,
+    public Collection<EventFullDto> adminFindEvents(@RequestParam(required = false) List<Long> users,
                                                     @RequestParam(required = false) List<String> states,
                                                     @RequestParam(required = false) List<Long> categories,
-                                                    @RequestParam(required = false) LocalDateTime rangeStart,
-                                                    @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                    @RequestParam(required = false) String rangeStart,
+                                                    @RequestParam(required = false) String rangeEnd,
                                                     @RequestParam(defaultValue = "0") int from,
                                                     @RequestParam(defaultValue = "10") int size) {
         return service.adminFindEvents(
-                userId, users, states, categories, rangeStart, rangeEnd, from, size);
+                users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
-
     @PostMapping("/users/{initiatorId}/events")
-    public ResponseEntity<EventFullDto> createEvent(//@RequestHeader("X-Sharer-User-Id") long userId,
-                                                    @PathVariable long initiatorId,
+    public ResponseEntity<EventFullDto> createEvent(@PathVariable long initiatorId,
                                                     @RequestBody NewEventDto eventDto) {
-        return new ResponseEntity<>(service.saveEvent(eventDto, initiatorId, initiatorId), HttpStatus.OK);
+        return new ResponseEntity<>(service.saveEvent(eventDto, initiatorId), HttpStatus.OK);
     }
 
     @PatchMapping("/users/{initiatorId}/events")
-    public ResponseEntity<EventFullDto> updateEvent(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                    @PathVariable long initiatorId,
+    public ResponseEntity<EventFullDto> updateEvent(@PathVariable long initiatorId,
                                                     @RequestBody UpdateEventRequestDto eventDto) {
-        return service.updateEvent(eventDto, initiatorId, userId)
+        return service.updateEvent(eventDto, initiatorId)
                 .map(updatedEvent -> new ResponseEntity<>(updatedEvent, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PatchMapping("/users/{initiatorId}/events/{eventId}")
-    public ResponseEntity<EventFullDto> annulateEvent(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                      @PathVariable long initiatorId,
+    public ResponseEntity<EventFullDto> annulateEvent(@PathVariable long initiatorId,
                                                       @PathVariable long eventId) {
-        return service.annulateEvent(initiatorId, eventId, userId)
+        return service.annulateEvent(initiatorId, eventId)
                 .map(updatedEvent -> new ResponseEntity<>(updatedEvent, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/users/{initiatorId}/events")
-    public Collection<EventShortDto> findEvents(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                @PathVariable long initiatorId,
+    public Collection<EventShortDto> findEvents(@PathVariable long initiatorId,
                                                 @RequestParam(defaultValue = "0") int from,
                                                 @RequestParam(defaultValue = "10") int size) {
-        return service.findUserEvents(userId, initiatorId, from, size);
+        return service.findUserEvents(initiatorId, from, size);
     }
 
     @GetMapping("/users/{initiatorId}/events/{eventId}")
-    public ResponseEntity<EventFullDto> findUserEventById(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                          @PathVariable long initiatorId,
+    public ResponseEntity<EventFullDto> findUserEventById(@PathVariable long initiatorId,
                                                           @PathVariable long eventId) {
-        return service.getUserEvent(userId, initiatorId, eventId)
+        return service.getUserEvent(initiatorId, eventId)
                 .map(event -> new ResponseEntity<>(event, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/events")
-    public Collection<EventShortDto> findEvents(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                @RequestParam(required = false) String text,
+    public Collection<EventShortDto> findEvents(@RequestParam(required = false) String text,
                                                 @RequestParam(required = false) List<Long> categories,
                                                 @RequestParam(required = false) Boolean paid,
-                                                @RequestParam(required = false) LocalDateTime rangeStart,
-                                                @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                @RequestParam(required = false) String rangeStart,
+                                                @RequestParam(required = false) String rangeEnd,
                                                 @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                 @RequestParam(defaultValue = "EVENT_DATE") String sort,
                                                 @RequestParam(defaultValue = "0") int from,
                                                 @RequestParam(defaultValue = "10") int size) {
         return service.findEvents(
-                userId, text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EventFullDto> findEventById(@PathVariable long id,
-                                                      @RequestHeader("X-Sharer-User-Id") long userId) {
-        return service.getEvent(id, userId).map(event -> new ResponseEntity<>(event, HttpStatus.OK))
+    @GetMapping("/events/{id}")
+    public ResponseEntity<EventFullDto> findEventById(@PathVariable long id) {
+        return service.getEvent(id).map(event -> new ResponseEntity<>(event, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }

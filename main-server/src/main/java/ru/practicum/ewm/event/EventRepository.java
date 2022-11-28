@@ -16,10 +16,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             " where (upper(e.annotation) like upper(concat('%', ?1, '%')) or " +
             "        upper(e.description) like upper(concat('%', ?1, '%'))) " +
             "   and (?2 is null or e.categoryId in (?2)) " +
-            "   and (?3 is null or e.paid = ?2) " +
+            "   and (?3 is null or e.paid = ?3) " +
             "   and (?4 is null or e.eventDate >= ?4) " +
             "   and (?5 is null or e.eventDate <= ?5) " +
-            "   and (?6 = false or e.participantLimit - e.confirmedRequests > 0) ")
+            "   and (?6 = false or e.participantLimit - e.confirmedRequests > 0) " +
+            " order by e.eventDate desc ")
     Page<Event> findEvents(String text,
                            List<Long> categories,
                            Boolean paid,
@@ -33,7 +34,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "   and (?2 is null or e.state in (?2)) " +
             "   and (?3 is null or e.categoryId in (?3)) " +
             "   and (?4 is null or e.eventDate >= ?4) " +
-            "   and (?5 is null or e.eventDate <= ?5) ")
+            "   and (?5 is null or e.eventDate <= ?5) " +
+            " order by e.eventDate desc ")
     Page<Event> adminFindEvents(List<Long> users,
                                 List<String> states,
                                 List<Long> categories,
