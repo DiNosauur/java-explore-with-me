@@ -52,6 +52,20 @@ public class EventMapper {
         );
     }
 
+    public static EventShortDto toEventShortDto(EventFullDto eventFullDto) {
+        return new EventShortDto(
+                eventFullDto.getId(),
+                eventFullDto.getTitle(),
+                eventFullDto.getAnnotation(),
+                eventFullDto.getCategory(),
+                eventFullDto.getEventDate(),
+                eventFullDto.getInitiator(),
+                eventFullDto.getPaid(),
+                eventFullDto.getConfirmedRequests(),
+                eventFullDto.getViews()
+        );
+    }
+
     public static LocationDto toLocationDto(Location location) {
         return new LocationDto(location.getLat(), location.getLon());
     }
@@ -75,9 +89,9 @@ public class EventMapper {
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         event.setInitiatorId(userId);
         event.setLocationId(locationId);
-        event.setPaid(eventDto.getPaid());
-        event.setParticipantLimit(eventDto.getParticipantLimit());
-        event.setRequestModeration(eventDto.getRequestModeration());
+        event.setPaid(eventDto.getPaid() == null ? false : eventDto.getPaid());
+        event.setParticipantLimit(eventDto.getParticipantLimit() == null ? 0 : eventDto.getParticipantLimit());
+        event.setRequestModeration(eventDto.getRequestModeration() == null ? true : eventDto.getRequestModeration());
         event.setState(EventState.PENDING);
         return event;
     }

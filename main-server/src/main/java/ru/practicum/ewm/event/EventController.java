@@ -3,15 +3,18 @@ package ru.practicum.ewm.event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.*;
 
+import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping
+@Validated
 public class EventController {
     private final EventService service;
 
@@ -51,7 +54,7 @@ public class EventController {
 
     @PostMapping("/users/{initiatorId}/events")
     public ResponseEntity<EventFullDto> createEvent(@PathVariable long initiatorId,
-                                                    @RequestBody NewEventDto eventDto) {
+                                                    @Valid @RequestBody NewEventDto eventDto) {
         return new ResponseEntity<>(service.saveEvent(eventDto, initiatorId), HttpStatus.OK);
     }
 
