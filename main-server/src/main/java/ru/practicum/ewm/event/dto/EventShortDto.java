@@ -15,7 +15,7 @@ public class EventShortDto {
     private String title; // Заголовок
     private String annotation; // Краткое описание события
     private CategoryDto category; // Категория события
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate; // Дата и время на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
     private UserShortDto initiator; // Инициатор события
     private Boolean paid; // Нужно ли оплачивать участие

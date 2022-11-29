@@ -142,7 +142,7 @@ public class EventServiceImpl implements EventService {
                                                 String sort,
                                                 int from,
                                                 int size) {
-         log.info("Получение информации о событиях " +
+        log.info("Получение информации о событиях " +
                         "(text={},categories={},paid={},rangeStart={},rangeEnd={},onlyAvailable={},sort={})"
                 , text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
         int page = from / size;
