@@ -143,8 +143,8 @@ public class EventServiceImpl implements EventService {
                                                 int from,
                                                 int size) {
         log.info("Получение информации о событиях " +
-                        "(text={},categories={},paid={},rangeStart={},rangeEnd={},onlyAvailable={},sort={})"
-                , text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
+                        "(text={},categories={},paid={},rangeStart={},rangeEnd={},onlyAvailable={},sort={})",
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
         int page = from / size;
         return repository.findEvents(text, categories, paid,
                 rangeStart == null ? null : LocalDateTime.parse(rangeStart,
@@ -169,8 +169,8 @@ public class EventServiceImpl implements EventService {
                                                     String rangeEnd,
                                                     int from,
                                                     int size) {
-        log.info("Получение информации о событиях (users={},states={},categories={},rangeStart={},rangeEnd={})"
-                , users, states, categories, rangeStart, rangeEnd);
+        log.info("Получение информации о событиях (users={},states={},categories={},rangeStart={},rangeEnd={})",
+                users, states, categories, rangeStart, rangeEnd);
         int page = from / size;
         return repository.adminFindEvents(
                 users,
