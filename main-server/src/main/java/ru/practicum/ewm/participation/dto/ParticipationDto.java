@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class ParticipationRequestDto {
+public class ParticipationDto {
     private Long id; // Идентификатор заявки на участие в событии
     private LocalDateTime created; // Дата и время создания заявки
     private Long event; // Идентификатор события
