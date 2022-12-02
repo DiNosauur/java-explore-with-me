@@ -11,6 +11,8 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // уникальный идентификатор пользователя;
+    @Column
     private String email; // адрес электронной почты;
+    @Column
     private String name; // имя или логин пользователя;
 }

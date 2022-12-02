@@ -6,6 +6,9 @@ import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.UserMapper;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -126,5 +129,16 @@ public class EventMapper {
         event.setRequestModeration(eventDto.getRequestModeration() == null
                 ? eventOld.getRequestModeration() : eventDto.getRequestModeration());
         return event;
+    }
+
+    public static EndpointHit toEndpointHit(String uri) {
+        String ip = "";
+        try {
+            ip = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            ip = "localhost";
+        }
+        return new EndpointHit(0L, "ewm-main-server", uri, ip,
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 }

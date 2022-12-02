@@ -25,13 +25,27 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final EventClient client;
+
+    private long getHits(Event event) {
+        Collection<ViewStats> stats = (Collection<ViewStats>) client.getStats(
+                event.getCreatedOn().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                List.of("/events/" + event.getId()),
+                true);
+        for (ViewStats stat : stats) {
+            return stat.getHits();
+        }
+        return 0;
+    }
 
     private EventFullDto toEventFullDto(Event event) {
         return EventMapper.toEventFullDto(event,
                 categoryRepository.findById(event.getCategoryId()).get(),
                 userRepository.findById(event.getInitiatorId()).get(),
                 locationRepository.findById(event.getLocationId()).get(),
-                null);
+                getHits(event)
+        );
     }
 
     @Transactional
@@ -145,6 +159,7 @@ public class EventServiceImpl implements EventService {
         log.info("Получение информации о событиях " +
                         "(text={},categories={},paid={},rangeStart={},rangeEnd={},onlyAvailable={},sort={})",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
+        client.addEndpointHit(EventMapper.toEndpointHit("/events"));
         int page = from / size;
         return repository.findEvents(text, categories, paid,
                 rangeStart == null ? null : LocalDateTime.parse(rangeStart,
@@ -200,6 +215,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Optional<EventFullDto> getEvent(long id) {
         log.info("Получение информации о событии (id={})", id);
+        client.addEndpointHit(EventMapper.toEndpointHit("/events/" + id));
         Optional<Event> event = repository.findById(id);
         if (event.isPresent()) {
             return Optional.of(toEventFullDto(event.get()));
