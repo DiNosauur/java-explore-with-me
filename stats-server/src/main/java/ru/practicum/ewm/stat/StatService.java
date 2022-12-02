@@ -2,7 +2,6 @@ package ru.practicum.ewm.stat;
 
 import ru.practicum.ewm.stat.dto.*;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
