@@ -8,7 +8,6 @@ import ru.practicum.ewm.user.UserMapper;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
