@@ -26,12 +26,17 @@ public class UserServiceImpl implements UserService {
         if (foundUser.isPresent() && foundUser.get().getId() != user.getId()) {
             throw new ConflictException("Пользователь с таким email уже зарегестрирован");
         }
+        foundUser = repository.findByName(user.getName());
+        if (foundUser.isPresent() && foundUser.get().getId() != user.getId()) {
+            throw new ConflictException("Пользователь с таким именем уже зарегестрирован");
+        }
     }
 
     @Transactional
     @Override
     public User saveUser(User user) {
         log.info("Добавление пользователя {}", user.toString());
+        validate(user);
         return repository.save(user);
     }
 

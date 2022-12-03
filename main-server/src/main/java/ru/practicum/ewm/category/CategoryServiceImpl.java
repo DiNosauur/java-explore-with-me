@@ -32,6 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category saveCategory(Category category) {
         log.info("Добавление категории {}", category.toString());
+        validate(category);
         return repository.save(category);
     }
 

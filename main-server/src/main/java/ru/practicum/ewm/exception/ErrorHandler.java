@@ -5,6 +5,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 @RestControllerAdvice
 public class ErrorHandler {
 
@@ -26,9 +30,13 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConflictException(final ConflictException e) {
-        return new ErrorResponse(
-                e.getMessage()
+    public ApiError handleConflictException(final ConflictException e) {
+        return new ApiError(
+                List.of(e.getMessage()),
+                e.getMessage(),
+                e.getMessage(),
+                HttpStatus.CONFLICT.name(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
     }
 }

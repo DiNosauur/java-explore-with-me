@@ -15,5 +15,6 @@ public class UserRequestDto {
     @Email(regexp = "\\w+@\\w+\\.(ru|com)",
             message = "Email should be valid")
     private String email; // адрес электронной почты;
+    @NotBlank(message = "Name is required")
     private String name; // имя или логин пользователя;
 }
