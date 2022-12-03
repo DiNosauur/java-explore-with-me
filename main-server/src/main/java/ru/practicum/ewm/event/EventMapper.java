@@ -140,4 +140,8 @@ public class EventMapper {
         return new EndpointHit(0L, "ewm-main-server", uri, ip,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
+
+    public static ViewStats toViewStats(String uri) {
+        return new ViewStats("ewm-main-server", uri, 0L);
+    }
 }

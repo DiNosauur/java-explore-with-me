@@ -28,7 +28,8 @@ public class EventServiceImpl implements EventService {
     private final EventClient client;
 
     private Long getHits(Event event) {
-        Collection<ViewStats> stats = (Collection<ViewStats>) client.getStats(
+        log.info("Получение количества просмотров для события (id={})", event.getId());
+        Collection<ViewStats> stats = client.getStats(
                 event.getCreatedOn().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 List.of("/events/" + event.getId()),
@@ -142,7 +143,7 @@ public class EventServiceImpl implements EventService {
                 .map(event -> EventMapper.toEventShortDto(event,
                         categoryRepository.findById(event.getCategoryId()).get(),
                         userRepository.findById(event.getInitiatorId()).get(),
-                        null))
+                        getHits(event)))
                 .collect(Collectors.toList());
     }
 
@@ -172,7 +173,7 @@ public class EventServiceImpl implements EventService {
                 .map(event -> EventMapper.toEventShortDto(event,
                         categoryRepository.findById(event.getCategoryId()).get(),
                         userRepository.findById(event.getInitiatorId()).get(),
-                        null))
+                        getHits(event)))
                 .collect(Collectors.toList());
     }
 
