@@ -27,7 +27,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final EventClient client;
 
-    private long getHits(Event event) {
+    private Long getHits(Event event) {
         Collection<ViewStats> stats = (Collection<ViewStats>) client.getStats(
                 event.getCreatedOn().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
@@ -36,7 +36,7 @@ public class EventServiceImpl implements EventService {
         for (ViewStats stat : stats) {
             return stat.getHits();
         }
-        return 0;
+        return 0L;
     }
 
     private EventFullDto toEventFullDto(Event event) {

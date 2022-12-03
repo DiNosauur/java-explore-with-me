@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface StatRepository extends JpaRepository<Stat, Long> {
-    @Query(" select s.app, s.uri, count(distinct s.ip) from Stat s " +
+    @Query(" select new ru.practicum.ewm.stat.dto.ViewStats(s.app, s.uri, count(distinct s.ip)) from Stat s " +
             " where s.uri in (?1) " +
             "   and (?2 is null or s.timestamp >= ?2) " +
             "   and (?3 is null or s.timestamp <= ?3) " +
@@ -19,7 +19,7 @@ public interface StatRepository extends JpaRepository<Stat, Long> {
                                          LocalDateTime start,
                                          LocalDateTime end);
 
-    @Query(" select s.app, s.uri, count(s.ip) from Stat s " +
+    @Query(" select new ru.practicum.ewm.stat.dto.ViewStats(s.app, s.uri, count(s.ip)) from Stat s " +
             " where s.uri in (?1) " +
             "   and (?2 is null or s.timestamp >= ?2) " +
             "   and (?3 is null or s.timestamp <= ?3) " +

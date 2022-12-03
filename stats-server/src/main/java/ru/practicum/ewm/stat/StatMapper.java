@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter;
 public class StatMapper {
     public static Stat toStat(StatDto statDto) {
         Stat stat = new Stat();
-        stat.setId(statDto.getId());
         stat.setApp(statDto.getApp());
         stat.setUri(statDto.getUri());
         stat.setIp(statDto.getIp());
