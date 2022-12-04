@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.compilation.dto.*;
 
+import javax.validation.Valid;
 import java.util.Collection;
 
 @RestController
@@ -15,7 +16,7 @@ public class CompilationController {
     private final CompilationService service;
 
     @PostMapping("/admin/compilations")
-    public ResponseEntity<CompilationDto> createEvent(@RequestBody NewCompilationDto compilationDto) {
+    public ResponseEntity<CompilationDto> createEvent(@Valid @RequestBody NewCompilationDto compilationDto) {
         return new ResponseEntity<>(service.saveCompilation(compilationDto), HttpStatus.OK);
     }
 

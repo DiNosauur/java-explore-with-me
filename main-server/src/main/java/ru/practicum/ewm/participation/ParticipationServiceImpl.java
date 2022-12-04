@@ -4,8 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.event.Event;
 import ru.practicum.ewm.event.EventRepository;
+import ru.practicum.ewm.event.EventState;
+import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.exception.ValidationException;
 import ru.practicum.ewm.participation.dto.ParticipationDto;
+import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.UserRepository;
 
 import java.util.Collection;
@@ -21,11 +26,37 @@ public class ParticipationServiceImpl implements ParticipationService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
+    private User validateUser(long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (!user.isPresent()) {
+            throw new NotFoundException(String.format("Пользователь (id = %s) не найден", userId));
+        }
+        return user.get();
+    }
+
+    private Event validateEvent(long eventId) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (!event.isPresent()) {
+            throw new NotFoundException(String.format("Событие (id = %s) не найдено", eventId));
+        }
+        return event.get();
+    }
+
+    private void validateRequest(long userId, long eventId) {
+        User user = validateUser(userId);
+        Event event = validateEvent(eventId);
+        if (event.getInitiatorId() != userId) {
+            throw new ValidationException(String.format(
+                    "Пользователь (id = %s) не является инициатором события (id = %s)", userId, eventId));
+        }
+    }
+
     @Override
     public Collection<ParticipationDto> findEventParticipations(long userId, long eventId) {
         log.info("Получение информации о запросах на участие в событии (eventId={}) текущего пользователя (users={})",
                 eventId, userId);
-        return repository.findAllByEventIdAndRequesterId(eventId, userId)
+        validateRequest(userId, eventId);
+        return repository.findAllByEventId(eventId)
                 .stream()
                 .map(participation -> ParticipationMapper.toParticipationDto(participation))
                 .collect(Collectors.toList());
@@ -94,25 +125,46 @@ public class ParticipationServiceImpl implements ParticipationService {
     }
 
     private Optional<Participation> validateConfirmRequest(long userId, long eventId, long reqId) {
-        //если для события лимит заявок равен 0 или отключена пре-модерация заявок,
-        // то подтверждение заявок не требуется
-        //нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие
-        //если при подтверждении данной заявки, лимит заявок для события исчерпан,
-        // то все неподтверждённые заявки необходимо отклонить
+        validateUser(userId);
+        Event event = validateEvent(eventId);
+        if (event.getRequestModeration() &&
+                event.getParticipantLimit() > 0 &&
+                event.getParticipantLimit() - event.getConfirmedRequests() <= 0) {
+            throw new ValidationException(String.format(
+                    "нельзя подтвердить заявку (id = %s) на события (id = %s), т.к. " +
+                            "лимит заявок для события исчерпан", reqId, eventId));
+        }
         return repository.findById(reqId);
     }
 
     private Optional<Participation> validateCancelRequest(long userId, long requestId) {
+        validateUser(userId);
         return repository.findById(requestId);
     }
 
     private ParticipationStatus validateAddRequest(long userId, long eventId) {
-        //нельзя добавить повторный запрос
-        //инициатор события не может добавить запрос на участие в своём событии
-        //нельзя участвовать в неопубликованном событии
-        //если у события достигнут лимит запросов на участие - необходимо вернуть ошибку
-        //если для события отключена пре-модерация запросов на участие, то запрос должен
-        // автоматически перейти в состояние подтвержденного
+        validateUser(userId);
+        Event event = validateEvent(eventId);
+        if (event.getInitiatorId() == userId) {
+            throw new ValidationException(String.format(
+                    "Пользователь (id = %s) не может добавить запрос на участие в своём событии (id = %s)",
+                    userId, eventId));
+        }
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new ValidationException(String.format(
+                    "нельзя участвовать в неопубликованном событии (id = %s)", eventId));
+        }
+        if (event.getRequestModeration() &&
+                event.getParticipantLimit() > 0 &&
+                event.getParticipantLimit() - event.getConfirmedRequests() <= 0) {
+            throw new ValidationException(String.format(
+                    "достигнут лимит запросов на участие в событии (id = %s)", eventId));
+        }
+        if (repository.findByRequesterIdAndEventId(userId, eventId).isPresent()) {
+            throw new ValidationException(String.format(
+                    "нельзя добавить повторный запрос от пользователя (id = %s) на участие в событии (id = %s)",
+                    userId, eventId));
+        }
         return ParticipationStatus.PENDING;
     }
 }
