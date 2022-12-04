@@ -12,7 +12,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class UserRequestDto {
     @NotBlank(message = "Email is required")
-    @Email(regexp = "\\w+@\\w+\\.(ru|com)",
+    @Email(regexp = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", //"\\w+@\\w+\\.(ru|com)",
             message = "Email should be valid")
     private String email; // адрес электронной почты;
     @NotBlank(message = "Name is required")
