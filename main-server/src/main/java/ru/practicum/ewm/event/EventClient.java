@@ -50,7 +50,6 @@ public class EventClient extends BaseClient {
                         null, parameters);
         log.info("tempViewStats={}", tempViewStats.toString());
         log.info("tempViewStats.getBody={}", tempViewStats.getBody().toString());
-        ObjectMapper objectMapper = new ObjectMapper();
         String body = tempViewStats.getBody().toString();
         ViewStats stat = new ViewStats();
         if (body.length() > 0 && body.indexOf("hits=") > 0) {
@@ -58,17 +57,6 @@ public class EventClient extends BaseClient {
             log.info("hits={}", hits);
             stat.setHits(Integer.parseInt(hits));
         }
-        /*try {
-            stats = (List<ViewStats>) objectMapper.readValue(
-                    tempViewStats.getBody().toString(),
-                    new TypeReference<>() {
-                    }
-            );
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new ValidationException(String.format(
-                    "Ошибка валидации ответа от сервера статистики: %s", e.getMessage()));
-        }*/
         log.info("stats={}", stat.toString());
         return List.of(stat);
     }
