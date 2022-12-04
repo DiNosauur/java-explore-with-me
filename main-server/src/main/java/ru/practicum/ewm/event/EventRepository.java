@@ -14,12 +14,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findAllByInitiatorId(long initiatorId, Pageable pageable);
 
     @Query(" select e from Event e " +
-            " where (upper(e.annotation) like upper(concat('%', :text, '%')) or " +
+            " where (substring(:mode, 1, 1) = '0' or " +
+            "        upper(e.annotation) like upper(concat('%', :text, '%')) or " +
             "        upper(e.description) like upper(concat('%', :text, '%'))) " +
-            "   and (substring(:mode, 1, 1) = '0' or e.categoryId in :categories) " +
-            "   and (substring(:mode, 2, 1) = '0' or e.paid = :paid) " +
-            "   and (substring(:mode, 3, 1) = '0' or e.eventDate >= :rangeStart) " +
-            "   and (substring(:mode, 4, 1) = '0' or e.eventDate <= :rangeEnd) " +
+            "   and (substring(:mode, 2, 1) = '0' or e.categoryId in :categories) " +
+            "   and (substring(:mode, 3, 1) = '0' or e.paid = :paid) " +
+            "   and (substring(:mode, 4, 1) = '0' or e.eventDate >= :rangeStart) " +
+            "   and (substring(:mode, 5, 1) = '0' or e.eventDate <= :rangeEnd) " +
             "   and (:onlyAvailable = false or e.participantLimit - e.confirmedRequests > 0) " +
             " order by e.eventDate desc ")
     Page<Event> findEvents(@Param("mode") String mode,

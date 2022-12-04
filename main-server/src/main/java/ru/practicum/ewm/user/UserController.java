@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.dto.UserRequestDto;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,8 +18,10 @@ public class UserController {
     private final UserService service;
 
     @GetMapping
-    public Collection<User> getAllUsers() {
-        return service.getAllUsers();
+    public Collection<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
+                                        @RequestParam(defaultValue = "0") int from,
+                                        @RequestParam(defaultValue = "10") int size) {
+        return service.getUsers(ids, from, size);
     }
 
     @PostMapping

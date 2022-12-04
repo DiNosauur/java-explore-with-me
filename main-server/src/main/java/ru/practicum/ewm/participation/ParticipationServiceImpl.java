@@ -25,7 +25,7 @@ public class ParticipationServiceImpl implements ParticipationService {
     public Collection<ParticipationDto> findEventParticipations(long userId, long eventId) {
         log.info("Получение информации о запросах на участие в событии (eventId={}) текущего пользователя (users={})",
                 eventId, userId);
-        return repository.findAllByEventId(eventId)
+        return repository.findAllByEventIdAndRequesterId(eventId, userId)
                 .stream()
                 .map(participation -> ParticipationMapper.toParticipationDto(participation))
                 .collect(Collectors.toList());

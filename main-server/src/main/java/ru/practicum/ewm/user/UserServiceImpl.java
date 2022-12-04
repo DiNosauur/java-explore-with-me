@@ -2,12 +2,16 @@ package ru.practicum.ewm.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.exception.ConflictException;
+import ru.practicum.ewm.user.dto.UserDto;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -17,8 +21,16 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     @Override
-    public Collection<User> getAllUsers() {
-        return repository.findAll();
+    public Collection<UserDto> getUsers(List<Long> ids, int from, int size) {
+        log.info("Получение информации о пользователях (ids={})", ids);
+        int page = from / size;
+        return repository.getUsers(
+                ids == null ? 0 : 1,
+                ids,
+                PageRequest.of(page, size))
+                .stream()
+                .map(user -> UserMapper.toUserDto(user))
+                .collect(Collectors.toList());
     }
 
     private void validate(User user) {

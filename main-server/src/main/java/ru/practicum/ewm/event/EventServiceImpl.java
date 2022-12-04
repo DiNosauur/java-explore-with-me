@@ -163,14 +163,16 @@ public class EventServiceImpl implements EventService {
         client.addEndpointHit(EventMapper.toEndpointHit("/events"));
         int page = from / size;
         return repository.findEvents(
-                String.format("%s%s%s%s",
-                        categories == null ? "0" : "1",
+                String.format("%s%s%s%s%s",
+                        text == null || text.equals("0") ? "0" : "1",
+                        categories == null || categories.get(0) == 0 ? "0" : "1",
                         paid == null ? "0" : "1",
                         rangeStart == null ? "0" : "1",
                         rangeEnd == null ? "0" : "1"),
                 text, categories, paid,
-                rangeStart == null ? null : LocalDateTime.parse(rangeStart,
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                rangeStart == null && rangeEnd == null ? LocalDateTime.now() :
+                        rangeStart == null ? null : LocalDateTime.parse(rangeStart,
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 rangeEnd == null ? null : LocalDateTime.parse(rangeEnd,
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 onlyAvailable,
@@ -196,9 +198,9 @@ public class EventServiceImpl implements EventService {
         int page = from / size;
         return repository.adminFindEvents(
                 String.format("%s%s%s%s%s",
-                        users == null ? "0" : "1",
+                        users == null || users.get(0) == 0 ? "0" : "1",
                         states == null ? "0" : "1",
-                        categories == null ? "0" : "1",
+                        categories == null || categories.get(0) == 0 ? "0" : "1",
                         rangeStart == null ? "0" : "1",
                         rangeEnd == null ? "0" : "1"),
                 users,
