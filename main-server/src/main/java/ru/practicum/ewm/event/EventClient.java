@@ -41,22 +41,18 @@ public class EventClient extends BaseClient {
         Map<String, Object> parameters = Map.of(
                 "start", start,
                 "end", end,
-                "uris", String.join(",", uris), //uris.stream().collect(Collectors.joining(",")),
+                "uris", String.join(",", uris),
                 "unique", unique
         );
         ResponseEntity<Object> tempViewStats =
                 get("/stats?start={start}&end={end}&uris={uris}&unique={unique}",
                         null, parameters);
-        log.info("tempViewStats={}", tempViewStats.toString());
-        log.info("tempViewStats.getBody={}", tempViewStats.getBody().toString());
         String body = tempViewStats.getBody().toString();
         ViewStats stat = new ViewStats();
         if (body.length() > 0 && body.indexOf("hits=") > 0) {
             String hits = body.substring(body.indexOf("hits=") + 5, body.indexOf("}"));
-            log.info("hits={}", hits);
             stat.setHits(Integer.parseInt(hits));
         }
-        log.info("stats={}", stat.toString());
         return List.of(stat);
     }
 }
