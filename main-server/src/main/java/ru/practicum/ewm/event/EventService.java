@@ -20,7 +20,7 @@ public interface EventService {
     Optional<EventFullDto> adminRejectEvent(Long eventId);
 
     Collection<EventFullDto> adminFindEvents(List<Long> users,
-                                             List<String> states,
+                                             List<EventState> states,
                                              List<Long> categories,
                                              String rangeStart,
                                              String rangeEnd,

@@ -162,7 +162,13 @@ public class EventServiceImpl implements EventService {
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
         client.addEndpointHit(EventMapper.toEndpointHit("/events"));
         int page = from / size;
-        return repository.findEvents(text, categories, paid,
+        return repository.findEvents(
+                String.format("%s%s%s%s",
+                        categories == null ? "0" : "1",
+                        paid == null ? "0" : "1",
+                        rangeStart == null ? "0" : "1",
+                        rangeEnd == null ? "0" : "1"),
+                text, categories, paid,
                 rangeStart == null ? null : LocalDateTime.parse(rangeStart,
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 rangeEnd == null ? null : LocalDateTime.parse(rangeEnd,
@@ -179,7 +185,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Collection<EventFullDto> adminFindEvents(List<Long> users,
-                                                    List<String> states,
+                                                    List<EventState> states,
                                                     List<Long> categories,
                                                     String rangeStart,
                                                     String rangeEnd,
@@ -189,6 +195,12 @@ public class EventServiceImpl implements EventService {
                 users, states, categories, rangeStart, rangeEnd);
         int page = from / size;
         return repository.adminFindEvents(
+                String.format("%s%s%s%s%s",
+                        users == null ? "0" : "1",
+                        states == null ? "0" : "1",
+                        categories == null ? "0" : "1",
+                        rangeStart == null ? "0" : "1",
+                        rangeEnd == null ? "0" : "1"),
                 users,
                 states,
                 categories,

@@ -42,7 +42,7 @@ public class EventController {
 
     @GetMapping("/admin/events")
     public Collection<EventFullDto> adminFindEvents(@RequestParam(required = false) List<Long> users,
-                                                    @RequestParam(required = false) List<String> states,
+                                                    @RequestParam(required = false) List<EventState> states,
                                                     @RequestParam(required = false) List<Long> categories,
                                                     @RequestParam(required = false) String rangeStart,
                                                     @RequestParam(required = false) String rangeEnd,

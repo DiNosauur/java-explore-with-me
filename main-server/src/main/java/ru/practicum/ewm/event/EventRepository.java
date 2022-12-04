@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,33 +14,35 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findAllByInitiatorId(long initiatorId, Pageable pageable);
 
     @Query(" select e from Event e " +
-            " where (upper(e.annotation) like upper(concat('%', ?1, '%')) or " +
-            "        upper(e.description) like upper(concat('%', ?1, '%'))) " +
-            "   and (?2 is null or e.categoryId in (?2)) " +
-            "   and (?3 is null or e.paid = ?3) " +
-            "   and (?4 is null or e.eventDate >= ?4) " +
-            "   and (?5 is null or e.eventDate <= ?5) " +
-            "   and (?6 = false or e.participantLimit - e.confirmedRequests > 0) " +
+            " where (upper(e.annotation) like upper(concat('%', :text, '%')) or " +
+            "        upper(e.description) like upper(concat('%', :text, '%'))) " +
+            "   and (substring(:mode, 1, 1) = '0' or e.categoryId in :categories) " +
+            "   and (substring(:mode, 2, 1) = '0' or e.paid = :paid) " +
+            "   and (substring(:mode, 3, 1) = '0' or e.eventDate >= :rangeStart) " +
+            "   and (substring(:mode, 4, 1) = '0' or e.eventDate <= :rangeEnd) " +
+            "   and (:onlyAvailable = false or e.participantLimit - e.confirmedRequests > 0) " +
             " order by e.eventDate desc ")
-    Page<Event> findEvents(String text,
-                           List<Long> categories,
-                           Boolean paid,
-                           LocalDateTime rangeStart,
-                           LocalDateTime rangeEnd,
-                           Boolean onlyAvailable,
+    Page<Event> findEvents(@Param("mode") String mode,
+                           @Param("text") String text,
+                           @Param("categories") List<Long> categories,
+                           @Param("paid") Boolean paid,
+                           @Param("rangeStart") LocalDateTime rangeStart,
+                           @Param("rangeEnd") LocalDateTime rangeEnd,
+                           @Param("onlyAvailable") Boolean onlyAvailable,
                            Pageable pageable);
 
-    @Query(" select e from Event e " +
-            " where (?1 is null or e.initiatorId in (?1)) " +
-            "   and (?2 is null or e.state in (?2)) " +
-            "   and (?3 is null or e.categoryId in (?3)) " +
-            "   and (?4 is null or e.eventDate >= ?4) " +
-            "   and (?5 is null or e.eventDate <= ?5) " +
+    @Query(value = "select e from Event e " +
+            " where (substring(:mode, 1, 1) = '0' or e.initiatorId in :users) " +
+            "   and (substring(:mode, 2, 1) = '0' or e.state in :states) " +
+            "   and (substring(:mode, 3, 1) = '0' or e.categoryId in :categories) " +
+            "   and (substring(:mode, 4, 1) = '0' or e.eventDate >= :rangeStart) " +
+            "   and (substring(:mode, 5, 1) = '0' or e.eventDate <= :rangeEnd) " +
             " order by e.eventDate desc ")
-    Page<Event> adminFindEvents(List<Long> users,
-                                List<String> states,
-                                List<Long> categories,
-                                LocalDateTime rangeStart,
-                                LocalDateTime rangeEnd,
+    Page<Event> adminFindEvents(@Param("mode") String mode,
+                                @Param("users") List<Long> users,
+                                @Param("states") List<EventState> states,
+                                @Param("categories") List<Long> categories,
+                                @Param("rangeStart") LocalDateTime rangeStart,
+                                @Param("rangeEnd") LocalDateTime rangeEnd,
                                 Pageable pageable);
 }

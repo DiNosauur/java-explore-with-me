@@ -1,7 +1,5 @@
 package ru.practicum.ewm.event;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.ewm.client.BaseClient;
 import ru.practicum.ewm.event.dto.EndpointHit;
 import ru.practicum.ewm.event.dto.ViewStats;
-import ru.practicum.ewm.exception.ValidationException;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +42,7 @@ public class EventClient extends BaseClient {
         Map<String, Object> parameters = Map.of(
                 "start", start,
                 "end", end,
-                "uris", uris,
+                "uris", String.join(",", uris), //uris.stream().collect(Collectors.joining(",")),
                 "unique", unique
         );
         ResponseEntity<Object> tempViewStats =
@@ -54,17 +51,25 @@ public class EventClient extends BaseClient {
         log.info("tempViewStats={}", tempViewStats.toString());
         log.info("tempViewStats.getBody={}", tempViewStats.getBody().toString());
         ObjectMapper objectMapper = new ObjectMapper();
-        List<ViewStats> stats;
-        try {
-            stats = objectMapper.readValue(
-                    tempViewStats.getBody().toString(), new TypeReference<>() {
-                    });
+        String body = tempViewStats.getBody().toString();
+        ViewStats stat = new ViewStats();
+        if (body.length() > 0 && body.indexOf("hits=") > 0) {
+            String hits = body.substring(body.indexOf("hits=") + 5, body.indexOf("}"));
+            log.info("hits={}", hits);
+            stat.setHits(Integer.parseInt(hits));
+        }
+        /*try {
+            stats = (List<ViewStats>) objectMapper.readValue(
+                    tempViewStats.getBody().toString(),
+                    new TypeReference<>() {
+                    }
+            );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new ValidationException(String.format(
                     "Ошибка валидации ответа от сервера статистики: %s", e.getMessage()));
-        }
-        log.info("stats={}", stats.toString());
-        return stats;
+        }*/
+        log.info("stats={}", stat.toString());
+        return List.of(stat);
     }
 }
