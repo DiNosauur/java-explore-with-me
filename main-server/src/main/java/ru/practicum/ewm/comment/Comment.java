@@ -16,7 +16,7 @@ public class Comment {
     @Column(name = "event_id")
     private Long eventId; // идентификатор комментируемого события
     @Column(name = "commentator_id")
-    private Long commentator_id; // идентификатоп комментатора
+    private Long commentatorId; // идентификатоп комментатора
     @NotBlank(message = "Comment is required")
     @Column
     private String comment; // текст комментария
@@ -29,5 +29,5 @@ public class Comment {
     @Enumerated(EnumType.STRING)
     private CommentState state; // статус комментария
     @Column(name = "comment_id")
-    private Long comment_id; // ссылка на комментируемый комментарий
+    private Long commentId; // ссылка на комментируемый комментарий
 }
