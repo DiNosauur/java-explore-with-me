@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS comments
     comment            varchar(7000) NOT NULL,
     created            TIMESTAMP NOT NULL,
     published          TIMESTAMP,
+    updated            TIMESTAMP,
     comment_moderation boolean,
     state              varchar(10),
     comment_id         BIGINT,
