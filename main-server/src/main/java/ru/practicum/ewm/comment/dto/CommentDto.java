@@ -2,7 +2,7 @@ package ru.practicum.ewm.comment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.ewm.comment.CommentState;
+import ru.practicum.ewm.comment.model.CommentState;
 
 import java.time.LocalDateTime;
 

@@ -1,10 +1,12 @@
-package ru.practicum.ewm.comment;
+package ru.practicum.ewm.comment.model;
 
 import ru.practicum.ewm.comment.dto.*;
+import ru.practicum.ewm.comment.model.Comment;
+import ru.practicum.ewm.comment.model.CommentState;
 
 import java.time.LocalDateTime;
 
-import static ru.practicum.ewm.comment.CommentState.*;
+import static ru.practicum.ewm.comment.model.CommentState.*;
 
 public class CommentMapper {
     public static CommentDto toCommentDto(Comment comment) {
