@@ -10,11 +10,11 @@ public interface CommentService {
 
     Optional<CommentDto> updateComment(UpdCommentDto commentDto, Long eventId, Long commentatorId);
 
-    boolean deleteComment(Long id, Long eventId, Long commentatorId);
+    Optional<CommentDto> deleteComment(Long id, Long eventId, Long commentatorId);
 
-    Optional<CommentDto> adminUpdateComment(UpdCommentDto commentDto, Long id);
+    Optional<CommentDto> adminUpdateComment(UpdCommentDto commentDto);
 
-    boolean adminDeleteComment(Long id);
+    Optional<CommentDto> adminDeleteComment(Long id);
 
     Optional<CommentDto> adminPublishComment(Long id);
 
@@ -22,7 +22,28 @@ public interface CommentService {
 
     Optional<CommentDto> adminFindComment(Long id);
 
-    Collection<CommentDto> getEventComments(Long eventId);
+    Collection<CommentDto> adminFindComments(Long id,
+                                             int from,
+                                             int size);
 
-    Collection<CommentDto> getCommentComments(Long commentId);
+    Collection<CommentDto> adminGetEventComments(Long eventId,
+                                                 int from,
+                                                 int size);
+
+    Collection<CommentDto> getPublishedEventComments(Long eventId,
+                                                     String rangeStart,
+                                                     String rangeEnd,
+                                                     int from,
+                                                     int size);
+
+    Collection<CommentDto> getUserComments(Long userId,
+                                           int from,
+                                           int size);
+
+    Optional<CommentDto> getUserComment(Long userId, Long commentId);
+
+    Collection<CommentDto> getUserCommentComments(Long userId,
+                                                  Long commentId,
+                                                  int from,
+                                                  int size);
 }
