@@ -29,6 +29,7 @@ public class CommentPublicServiceImpl implements CommentPublicService {
         return eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException(String.format("Событие (id = %s) не найдено", eventId)));
     }
+
     @Override
     public Collection<CommentDto> getPublishedEventComments(Long eventId,
                                                             String rangeStart,
