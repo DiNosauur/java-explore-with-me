@@ -55,19 +55,17 @@ public class CommentPrivateServiceImpl implements CommentPrivateService {
         }
     }
 
-    private Comment validateComment(long id, long userId) {
-        Comment comment = repository.findById(id).orElseThrow(
+    private Comment validateComment(long id) {
+        return repository.findById(id).orElseThrow(
                 () -> new NotFoundException(String.format("Комментарий (id = %s) не найден", id)));
+    }
+
+    private Comment validateComment(long id, long userId, boolean isUpd) {
+        Comment comment = validateComment(id);
         if (comment.getCommentatorId() != userId) {
             throw new ValidationException(String.format(
                     "Пользователь (id = %s) не является автором комментария (id = %s)", userId, id));
         }
-        return comment;
-    }
-
-    private Comment validateComment(long id, long userId, long eventId, boolean isUpd) {
-        validateCommentEvent(userId, eventId);
-        Comment comment = validateComment(id, userId);
         if (isUpd && comment.getState().equals(CommentState.PUBLISHED)) {
             throw new ValidationException(String.format(
                     "Комментарий (id = %s) уже опубликован", id));
@@ -81,6 +79,9 @@ public class CommentPrivateServiceImpl implements CommentPrivateService {
         log.info("Добавление комментария {} к событию (id={}) от пользователя (id={})",
                 commentDto.toString(), eventId, commentatorId);
         validateCommentEvent(commentatorId, eventId);
+        if (commentDto.getCommentId() != null) {
+            validateComment(commentDto.getCommentId());
+        }
         Comment comment = repository.save(CommentMapper.toComment(
                 commentDto, eventId, commentatorId, true, CommentState.PENDING));
         return CommentMapper.toCommentDto(comment);
@@ -88,10 +89,10 @@ public class CommentPrivateServiceImpl implements CommentPrivateService {
 
     @Transactional
     @Override
-    public Optional<CommentDto> updateComment(UpdCommentDto commentDto, Long eventId, Long commentatorId) {
-        log.info("Изменение комментария (id={}) к событию (id={}) от пользователя (id={})",
-                commentDto.getId(), eventId, commentatorId);
-        Comment comment = validateComment(commentDto.getId(), commentatorId, eventId, true);
+    public Optional<CommentDto> updateComment(UpdCommentDto commentDto, Long commentatorId) {
+        log.info("Изменение комментария (id={}) пользователем (id={})",
+                commentDto.getId(), commentatorId);
+        Comment comment = validateComment(commentDto.getId(), commentatorId, true);
         comment.setComment(commentDto.getComment());
         comment.setUpdated(LocalDateTime.now());
         repository.save(comment);
@@ -100,10 +101,10 @@ public class CommentPrivateServiceImpl implements CommentPrivateService {
 
     @Transactional
     @Override
-    public Optional<CommentDto> deleteComment(Long id, Long eventId, Long commentatorId) {
-        log.info("Удаление комментария (id={}) к событию (id={}) от пользователя (id={})",
-                id, eventId, commentatorId);
-        Comment comment = validateComment(id, commentatorId, eventId, false);
+    public Optional<CommentDto> deleteComment(Long id, Long commentatorId) {
+        log.info("Удаление комментария (id={}) пользователем (id={})",
+                id, commentatorId);
+        Comment comment = validateComment(id, commentatorId, false);
         comment.setState(CommentState.CANCELED);
         comment.setUpdated(LocalDateTime.now());
         repository.save(comment);
@@ -124,26 +125,10 @@ public class CommentPrivateServiceImpl implements CommentPrivateService {
     }
 
     @Override
-    public Collection<CommentDto> getUserCommentComments(Long userId,
-                                                         Long commentId,
-                                                         int from,
-                                                         int size) {
-        log.info("Получение информации о комментариях к комментарию (id={}) пользователем (id={})",
-                commentId, userId);
-        validateComment(commentId, userId);
-        int page = from / size;
-        return repository.findAllByIdOrCommentIdOrderByPublished(commentId, commentId,
-                PageRequest.of(page, size))
-                .stream()
-                .map(comment -> CommentMapper.toCommentDto(comment))
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public Optional<CommentDto> getUserComment(Long userId, Long commentId) {
         log.info("Получение информации о комментарии (id={}) пользователем (id={})",
                 commentId, userId);
-        Comment comment = validateComment(commentId, userId);
+        Comment comment = validateComment(commentId, userId, false);
         return Optional.of(CommentMapper.toCommentDto(comment));
     }
 }

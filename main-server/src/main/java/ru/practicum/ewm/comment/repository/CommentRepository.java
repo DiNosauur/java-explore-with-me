@@ -3,6 +3,7 @@ package ru.practicum.ewm.comment.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.ewm.comment.model.Comment;
@@ -29,8 +30,42 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "       from comments c inner join comms on (c.comment_id = comms.id and c.state = 'PUBLISHED')) " +
             "select c.* from comments c inner join comms on (c.id = comms.id) order by comms.path ",
             nativeQuery = true)
-    Page<Comment> findPublishedEventComments(@Param("eventId") Long eventId,
-                                             @Param("rangeStart") LocalDateTime rangeStart,
-                                             @Param("rangeEnd") LocalDateTime rangeEnd,
-                                             Pageable pageable);
+    Page<Comment> findPublishedComments(@Param("eventId") Long eventId,
+                                        @Param("rangeStart") LocalDateTime rangeStart,
+                                        @Param("rangeEnd") LocalDateTime rangeEnd,
+                                        Pageable pageable);
+
+    @Query(" select c from Comment c " +
+            " where c.eventId = :eventId " +
+            "   and c.published between :rangeStart and :rangeEnd " +
+            "   and c.commentId is null " +
+            "   and c.state = 'PUBLISHED' " +
+            " order by c.published ")
+    Page<Comment> findPublishedEventComments(
+            @Param("eventId") Long eventId,
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
+            Pageable pageable);
+
+    @Query(" select c from Comment c " +
+            " where c.commentId = :commId " +
+            "   and c.published between :rangeStart and :rangeEnd " +
+            "   and c.state = 'PUBLISHED' " +
+            " order by c.published ")
+    Page<Comment> findPublishedCommentComments(
+            @Param("commId") Long commId,
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
+            Pageable pageable);
+
+    @Modifying
+    @Query(value = "with recursive comms (id, level ) as ( " +
+            "    select c.id, 1 from comments c where c.id = :commId " +
+            "     union all " +
+            "    select c.id, level + 1 " +
+            "      from comments c inner join comms on (c.comment_id = comms.id)) " +
+            " delete from comments c " +
+            "  where c.id in (select comms.id from comms) ",
+            nativeQuery = true)
+    int deleteComments(@Param("commId") Long commId);
 }

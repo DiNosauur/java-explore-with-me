@@ -20,27 +20,25 @@ import java.util.Collection;
 public class CommentPrivateController {
     private final CommentPrivateService service;
 
-    @PostMapping("/event/{eventId}")
+    @PostMapping
     public ResponseEntity<CommentDto> createComment(@PathVariable long userId,
-                                                    @PathVariable long eventId,
+                                                    @RequestParam Long eventId,
                                                     @Valid @RequestBody NewCommentDto commentDto) {
         return new ResponseEntity<>(service.saveComment(commentDto, eventId, userId), HttpStatus.OK);
     }
 
-    @PatchMapping("/event/{eventId}")
+    @PatchMapping
     public ResponseEntity<CommentDto> updateComment(@PathVariable long userId,
-                                                    @PathVariable long eventId,
                                                     @Valid @RequestBody UpdCommentDto commentDto) {
-        return service.updateComment(commentDto, eventId, userId)
-                .map(updatedComment -> new ResponseEntity<>(updatedComment, HttpStatus.OK))
+        return service.updateComment(commentDto, userId)
+                .map(updComment -> new ResponseEntity<>(updComment, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @DeleteMapping("/event/{eventId}/comment/{commId}")
+    @DeleteMapping("/{commId}")
     public ResponseEntity<CommentDto> annulateComment(@PathVariable long userId,
-                                                      @PathVariable long eventId,
                                                       @PathVariable long commId) {
-        return service.deleteComment(commId, eventId, userId)
+        return service.deleteComment(commId, userId)
                 .map(delComment -> new ResponseEntity<>(delComment, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
@@ -53,18 +51,11 @@ public class CommentPrivateController {
     }
 
     @GetMapping("/{commId}")
-    public Collection<CommentDto> findUserCommentComments(@PathVariable long userId,
-                                                          @PathVariable long commId,
-                                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                                          @Positive @RequestParam(defaultValue = "10") int size) {
-        return service.getUserCommentComments(userId, commId, from, size);
-    }
-
-    @GetMapping("/comment/{commId}")
     public ResponseEntity<CommentDto> findUserComment(@PathVariable long userId,
                                                       @PathVariable long commId) {
         return service.getUserComment(userId, commId)
-                .map(delComment -> new ResponseEntity<>(delComment, HttpStatus.OK))
+                .map(comment -> new ResponseEntity<>(comment, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
 }

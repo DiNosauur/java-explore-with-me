@@ -1,10 +1,11 @@
 package ru.practicum.ewm.comment.model;
 
 import ru.practicum.ewm.comment.dto.*;
-import ru.practicum.ewm.comment.model.Comment;
-import ru.practicum.ewm.comment.model.CommentState;
+import ru.practicum.ewm.event.Event;
+import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 import static ru.practicum.ewm.comment.model.CommentState.*;
 
@@ -23,8 +24,8 @@ public class CommentMapper {
     }
 
     public static Comment toComment(NewCommentDto commentDto,
-                                    long userId,
                                     long eventId,
+                                    long userId,
                                     Boolean commentModeration,
                                     CommentState state) {
         Comment comment = new Comment();
@@ -49,5 +50,18 @@ public class CommentMapper {
         comment.setUpdated(LocalDateTime.now());
         comment.setState(state);
         return comment;
+    }
+
+    public static CommentShortDto toCommentShortDto(Comment comment,
+                                                    Event event,
+                                                    UserShortDto commentator,
+                                                    Collection<CommentShortDto> commentShortDto) {
+        return new CommentShortDto(
+                comment.getId(),
+                new CommentEventDto(event.getId(), event.getTitle(), event.getEventDate()),
+                commentator,
+                comment.getComment(),
+                comment.getPublished(),
+                commentShortDto);
     }
 }

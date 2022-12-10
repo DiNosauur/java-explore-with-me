@@ -11,10 +11,11 @@ import ru.practicum.ewm.comment.model.Comment;
 import ru.practicum.ewm.comment.model.CommentMapper;
 import ru.practicum.ewm.comment.model.CommentState;
 import ru.practicum.ewm.comment.repository.CommentRepository;
-import ru.practicum.ewm.exception.ValidationException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,8 @@ public class CommentAdminServiceImpl implements CommentAdminService {
         log.info("Удаление комментария (id={}) администратором", id);
         Optional<Comment> comment = repository.findById(id);
         if (comment.isPresent()) {
-            comment.get().setState(CommentState.CANCELED);
-            comment.get().setUpdated(LocalDateTime.now());
-            repository.save(comment.get());
+            log.info("Удалено {} комментариев",
+                    repository.deleteComments(comment.get().getId()));
             return Optional.of(CommentMapper.toCommentDto(comment.get()));
         }
         return Optional.empty();
@@ -55,35 +55,41 @@ public class CommentAdminServiceImpl implements CommentAdminService {
 
     @Transactional
     @Override
-    public Optional<CommentDto> adminPublishComment(Long id) {
-        log.info("Опубликование комментария (id={}) администратором", id);
-        Optional<Comment> comment = repository.findById(id);
-        if (comment.isPresent()) {
-            if (comment.get().getState().equals(CommentState.PENDING)) {
-                comment.get().setState(CommentState.PUBLISHED);
-                comment.get().setPublished(LocalDateTime.now());
-                comment.get().setUpdated(LocalDateTime.now());
-                repository.save(comment.get());
-                return Optional.of(CommentMapper.toCommentDto(comment.get()));
+    public Collection<CommentDto> adminPublishComment(List<Long> ids) {
+        log.info("Опубликование комментариев (ids={}) администратором", ids);
+        Collection<CommentDto> comments = new ArrayList<>();
+        for (Long id : ids) {
+            Optional<Comment> comment = repository.findById(id);
+            if (comment.isPresent()) {
+                if (!comment.get().getState().equals(CommentState.PUBLISHED)) {
+                    comment.get().setState(CommentState.PUBLISHED);
+                    comment.get().setPublished(LocalDateTime.now());
+                    comment.get().setUpdated(LocalDateTime.now());
+                    repository.save(comment.get());
+                }
+                comments.add(CommentMapper.toCommentDto(comment.get()));
             }
-            throw new ValidationException(String.format(
-                    "Комментарий (id = %s) не в статусе ожидания", id));
         }
-        return Optional.empty();
+        return comments;
     }
 
     @Transactional
     @Override
-    public Optional<CommentDto> adminCancelComment(Long id) {
-        log.info("Отмена комментария (id={}) администратором", id);
-        Optional<Comment> comment = repository.findById(id);
-        if (comment.isPresent()) {
-            comment.get().setState(CommentState.CANCELED);
-            comment.get().setUpdated(LocalDateTime.now());
-            repository.save(comment.get());
-            return Optional.of(CommentMapper.toCommentDto(comment.get()));
+    public Collection<CommentDto> adminCancelComment(List<Long> ids) {
+        log.info("Отмена комментариев (ids={}) администратором", ids);
+        Collection<CommentDto> comments = new ArrayList<>();
+        for (Long id : ids) {
+            Optional<Comment> comment = repository.findById(id);
+            if (comment.isPresent()) {
+                if (!comment.get().getState().equals(CommentState.CANCELED)) {
+                    comment.get().setState(CommentState.CANCELED);
+                    comment.get().setUpdated(LocalDateTime.now());
+                    repository.save(comment.get());
+                }
+                comments.add(CommentMapper.toCommentDto(comment.get()));
+            }
         }
-        return Optional.empty();
+        return comments;
     }
 
     @Override
@@ -97,9 +103,7 @@ public class CommentAdminServiceImpl implements CommentAdminService {
     }
 
     @Override
-    public Collection<CommentDto> adminFindComments(Long id,
-                                                    int from,
-                                                    int size) {
+    public Collection<CommentDto> adminFindComments(Long id, int from, int size) {
         log.info("Получение информации о комментариях к комментарию (id={})", id);
         int page = from / size;
         return repository.findAllByIdOrCommentIdOrderByPublished(id, id,
@@ -110,9 +114,7 @@ public class CommentAdminServiceImpl implements CommentAdminService {
     }
 
     @Override
-    public Collection<CommentDto> adminGetEventComments(Long eventId,
-                                                        int from,
-                                                        int size) {
+    public Collection<CommentDto> adminGetEventComments(Long eventId, int from, int size) {
         log.info("Получение информации о комментариях к событию (id={})", eventId);
         int page = from / size;
         return repository.findAllByEventIdOrderByPublished(eventId,

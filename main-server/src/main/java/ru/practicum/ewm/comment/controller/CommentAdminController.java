@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,18 +36,14 @@ public class CommentAdminController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PatchMapping("/{commId}/publish")
-    public ResponseEntity<CommentDto> publishComment(@PathVariable long commId) {
-        return service.adminPublishComment(commId)
-                .map(updatedComment -> new ResponseEntity<>(updatedComment, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @PatchMapping("/publish")
+    public Collection<CommentDto> publishComment(@RequestParam List<Long> ids) {
+        return service.adminPublishComment(ids);
     }
 
-    @PatchMapping("/{commId}/cancel")
-    public ResponseEntity<CommentDto> cancelComment(@PathVariable long commId) {
-        return service.adminCancelComment(commId)
-                .map(updatedComment -> new ResponseEntity<>(updatedComment, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @PatchMapping("/cancel")
+    public Collection<CommentDto> cancelComment(@RequestParam List<Long> ids) {
+        return service.adminCancelComment(ids);
     }
 
     @GetMapping("/comment/{commId}")
@@ -59,14 +56,14 @@ public class CommentAdminController {
     @GetMapping("/{commId}")
     public Collection<CommentDto> findAdminComments(@PathVariable long commId,
                                                     @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                                    @Positive @RequestParam(defaultValue = "10") int size) {
+                                                    @Positive @RequestParam(defaultValue = "20") int size) {
         return service.adminFindComments(commId, from, size);
     }
 
     @GetMapping("/events/{eventId}")
     public Collection<CommentDto> findAdminEventComments(@PathVariable long eventId,
                                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                                         @Positive @RequestParam(defaultValue = "10") int size) {
+                                                         @Positive @RequestParam(defaultValue = "20") int size) {
         return service.adminGetEventComments(eventId, from, size);
     }
 }
